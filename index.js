@@ -4,14 +4,25 @@ const {
   DisconnectReason,
   Browsers,
   jidNormalizedUser,
+  downloadMediaMessage,
 } = require('@whiskeysockets/baileys');
 const { Boom } = require('@hapi/boom');
 const pino = require('pino');
 const qrcode = require('qrcode-terminal');
+const OpenAI = require('openai');
+const ffmpeg = require('fluent-ffmpeg');
+const ffmpegPath = require('ffmpeg-static');
+const os = require('os');
 const fs = require('fs');
 const path = require('path');
 const { checkText, stripDiacritics } = require('./badwords');
 const { t, DEFAULT_LANG, translations } = require('./lang');
+
+const openai = process.env.OPENAI_API_KEY
+  ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+  : null;
+
+if (ffmpegPath) ffmpeg.setFfmpegPath(ffmpegPath);
 
 const AUTH_DIR = './auth';
 const DATA_DIR = './data';
@@ -628,6 +639,111 @@ async function runAdminCommand(sock, cmd, msg, remoteJid, sender) {
   return true;
 }
 
+
+function getAudioMessage(msg) {
+  let content = msg?.message;
+  // Unwrap common WhatsApp message wrappers.
+  while (content) {
+    if (content.audioMessage) return content.audioMessage;
+    if (content.ephemeralMessage?.message) {
+      content = content.ephemeralMessage.message;
+      continue;
+    }
+    if (content.viewOnceMessage?.message) {
+      content = content.viewOnceMessage.message;
+      continue;
+    }
+    if (content.viewOnceMessageV2?.message) {
+      content = content.viewOnceMessageV2.message;
+      continue;
+    }
+    break;
+  }
+  return null;
+}
+
+async function transcribeVoiceNote(sock, msg) {
+  if (!openai) {
+    logger.warn('Voice moderation skipped: OPENAI_API_KEY is not configured');
+    return null;
+  }
+
+  const audioMessage = getAudioMessage(msg);
+  if (!audioMessage) return null;
+
+  let tempDir;
+  try {
+    const media = await downloadMediaMessage(
+      msg,
+      'buffer',
+      {},
+      { logger, reuploadRequest: sock.updateMediaMessage }
+    );
+    if (!Buffer.isBuffer(media) || media.length === 0) return null;
+
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'wa-voice-'));
+    const inputPath = path.join(tempDir, 'voice-input');
+    const wavPath = path.join(tempDir, 'voice.wav');
+    fs.writeFileSync(inputPath, media);
+
+    await new Promise((resolve, reject) => {
+      ffmpeg(inputPath)
+        .audioChannels(1)
+        .audioFrequency(16000)
+        .format('wav')
+        .on('end', resolve)
+        .on('error', reject)
+        .save(wavPath);
+    });
+
+    const result = await openai.audio.transcriptions.create({
+      file: fs.createReadStream(wavPath),
+      model: 'gpt-4o-mini-transcribe'
+    });
+    return (result.text || '').trim();
+  } catch (err) {
+    logger.error({ err }, 'Voice note transcription failed');
+    return null;
+  } finally {
+    if (tempDir) {
+      try { fs.rmSync(tempDir, { recursive: true, force: true }); } catch (_) {}
+    }
+  }
+}
+
+async function moderateVoiceNote(sock, msg, remoteJid, sender) {
+  if (!isGroup(remoteJid) || msg.key?.fromMe) return;
+  if (!getAudioMessage(msg)) return;
+  if (isIgnored(remoteJid, sender)) return;
+
+  // Only run transcription when the bot has permission to moderate this group.
+  const admin = await isBotAdmin(sock, remoteJid);
+  if (!admin) return;
+
+  const transcript = await transcribeVoiceNote(sock, msg);
+  if (!transcript) return;
+
+  logger.info({ group: remoteJid, transcript }, 'Voice note transcribed');
+
+  let badResult = checkCustomWords(transcript, remoteJid);
+  if (!badResult.found) badResult = checkText(transcript);
+  if (!badResult.found) return;
+
+  let groupName = 'Unknown Group';
+  try { groupName = (await sock.groupMetadata(remoteJid)).subject || groupName; } catch (_) {}
+
+  await sock.sendMessage(remoteJid, { delete: msg.key });
+  bumpStat(remoteJid, 'deleted');
+
+  const lang = getGroupLang(remoteJid);
+  try {
+    await sock.sendMessage(sender, { text: t(lang, 'profanityWarn')(groupName) });
+  } catch (_) {}
+
+  addWarning(remoteJid, sender, badResult.word, 'bot');
+  await autoPunish(sock, remoteJid, sender, groupName);
+}
+
 async function handleMessage(sock, msg) {
   console.log("HANDLE MESSAGE CALLED:", {
   fromMe: msg?.key?.fromMe,
@@ -638,15 +754,30 @@ const remoteJid = msg.key.remoteJid;
 const sender = msg.key.participant || remoteJid;
 const text = extractText(msg);
 
+  if (isGroup(remoteJid)) trackMsgKey(remoteJid, msg.key);
+  if (!text) {
+    try {
+      if (isGroup(remoteJid) && isMuted(remoteJid, sender) && getAudioMessage(msg)) {
+        await sock.sendMessage(remoteJid, { delete: msg.key });
+        addWarning(remoteJid, sender, 'muted', 'bot');
+        let groupName = 'Unknown Group';
+        try { groupName = (await sock.groupMetadata(remoteJid)).subject || groupName; } catch (_) {}
+        await autoPunish(sock, remoteJid, sender, groupName);
+      } else {
+        await moderateVoiceNote(sock, msg, remoteJid, sender);
+      }
+    } catch (err) {
+      logger.error({ err, msgKey: msg.key }, 'Voice moderation failed');
+    }
+    return;
+  }
+
 console.log("MESSAGE DEBUG:", {
   remoteJid,
   fromMe: msg.key.fromMe,
   text,
   isGroup: isGroup(remoteJid)
 });
-
-if (!text) return;
-  if (isGroup(remoteJid)) trackMsgKey(remoteJid, msg.key);
 
   if (isGroup(remoteJid) && isMuted(remoteJid, sender)) {
     await sock.sendMessage(remoteJid, { delete: msg.key });

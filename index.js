@@ -9,7 +9,7 @@ const {
 const { Boom } = require('@hapi/boom');
 const pino = require('pino');
 const qrcode = require('qrcode-terminal');
-const OpenAI = require('openai');
+const Groq = require('groq-sdk');
 const ffmpeg = require('fluent-ffmpeg');
 const ffmpegPath = require('ffmpeg-static');
 const os = require('os');
@@ -18,8 +18,8 @@ const path = require('path');
 const { checkText, stripDiacritics } = require('./badwords');
 const { t, DEFAULT_LANG, translations } = require('./lang');
 
-const openai = process.env.GROQ_API_KEY
-  ? new OpenAI({ apiKey: process.env.GROQ_API_KEY })
+const groq = process.env.GROQ_API_KEY
+  ? new Groq({ apiKey: process.env.GROQ_API_KEY })
   : null;
 
 if (ffmpegPath) ffmpeg.setFfmpegPath(ffmpegPath);
@@ -663,7 +663,7 @@ function getAudioMessage(msg) {
 }
 
 async function transcribeVoiceNote(sock, msg) {
-  if (!openai) {
+  if (!groq) {
     logger.warn('Voice moderation skipped: GROQ_API_KEY is not configured');
     return null;
   }
@@ -696,9 +696,9 @@ async function transcribeVoiceNote(sock, msg) {
         .save(wavPath);
     });
 
-    const result = await openai.audio.transcriptions.create({
+    const result = await groq.audio.transcriptions.create({
       file: fs.createReadStream(wavPath),
-      model: 'gpt-4o-mini-transcribe'
+      model: 'whisper-large-v3-turbo'
     });
     return (result.text || '').trim();
   } catch (err) {

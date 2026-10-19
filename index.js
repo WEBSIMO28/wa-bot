@@ -460,7 +460,7 @@ async function connect() {
   sock.ev.on('connection.update', ({ connection, lastDisconnect, qr }) => {
 if (qr) {
   console.log('\n========== WHATSAPP QR CODE ==========\n');
-  qrcode.generate(qr, { small: false });
+  qrcode.generate(qr, { small: true });
   console.log('\n========== SCAN THIS QR CODE ==========\n');
 }    if (connection === 'open') {
       STATUS.connected = true;

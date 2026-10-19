@@ -374,6 +374,35 @@ const badWords = new Set([
   'heeb',
   'beaner',
   'wetback',
+
+  // Moroccan Darija - Arabic script
+  'قحبة', 'قحبه', 'قحاب', 'قحبات', 'قحبات',
+  'شرموطة', 'شرموطه', 'شراميط', 'زامل', 'زاملة', 'خول', 'خوال',
+  'منيوك', 'منيوكة', 'منيوكه', 'متناك', 'متناكة', 'متناكه',
+  'نيك', 'نايك', 'نايكة', 'نايكه', 'كسمك', 'كس امك', 'كس أمك',
+  'كس اختك', 'كس أختك', 'كس بوك', 'طيز', 'طيزك', 'زب', 'زبي', 'زبك',
+  'عرص', 'عاهر', 'عاهرة', 'ديوث', 'قواد', 'قوادة',
+  'ولد القحبة', 'ولد القحبه', 'بنت القحبة', 'بنت القحبه',
+  'ولد الحرام', 'بنت الحرام', 'يا قحبة', 'يا قحبه', 'يا زامل',
+  'يا خول', 'يا عرص', 'يا كلب', 'سير تقود', 'تقود', 'تفو عليك',
+  'يلعن دينك', 'الله يلعنك', 'مكلخ', 'مكلخة', 'مكلخه',
+  'معفن', 'معفنة', 'معفنه', 'موسخ', 'موسخة', 'موسخه',
+  'حمار نتا', 'حمار نتي', 'قليل الحيا', 'قليل التربية',
+
+  // Moroccan Darija - Latin / Arabizi spellings
+  '9ahba', '9e7ba', '9e7be', '9e7bat', '9e7ab', '9hab',
+  'charmouta', 'chermouta', 'chermout', 'chramit',
+  'zamel', 'zaml', 'khawal', 'khoul', '5oul',
+  'mnyok', 'mniouk', 'mnayek', 'mnayka', 'mneyek', 'mneyka',
+  'mtnak', 'mtnaka', 'nik', 'nikek', 'niko', 'nayek', 'nayka',
+  'kos', 'koss', 'kosmok', 'kos omk', 'kos emek', 'kos mok',
+  'kos bok', 'zeb', 'zbi', 'zebek', 'tiz', 'tiiz', 'tizek',
+  '3ers', '3ares', '3ahira', 'diouth', '9awed', '9awad', '9awada',
+  '7mar', '7ayawan', '7a9ir', 'wskh', 'mklakh', 'm3fen', 'm3efen',
+  'mwasakh', 'mwsakh', 'sir t9awed', 'sir t9wd', 'sir t7wa',
+  'sir t7awa', 't9awed', 't9wd', 'allah yel3nek',
+  'weld l7ram', 'bent l7ram', 'weld l9ahba', 'bent l9ahba',
+  'ya 9ahba', 'ya zamel', 'ya khoul', 'ya 3ers', 'kelb', '7mar'
 ]);
 
 const leetMap = {

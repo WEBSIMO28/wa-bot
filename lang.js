@@ -969,7 +969,130 @@ const translations = {
 
 };
 
-const DEFAULT_LANG = 'en';
+
+// Moroccan Darija written in Arabic script
+translations.ma = {
+  ...translations.en,
+  name: 'الدارجة المغربية',
+  coinflip: (result) => `🪙 *قلبنا العملة:* ${result}!`,
+  heads: 'الوجه',
+  tails: 'الكتابة',
+  profanityWarn: (groupName) =>
+    '⚠️ *تنبيه: كلام غير لائق*\n\n' +
+    `الرسالة ديالك فمجموعة *${groupName}* فيها كلام خايب، وتمسحات.\n\n` +
+    'عافاك خليك محترم فالهضرة. إلا تكررات المخالفة، ممكن تكون إجراءات أخرى.',
+  adminWarn: (groupName, reason) =>
+    '⚠️ *تنبيه من مشرف المجموعة*\n\n' +
+    `المشرف نبهك فمجموعة *${groupName}*.\n` +
+    `*السبب:* ${reason}\n\n` +
+    'عافاك احترم قوانين المجموعة، وإلا تكررات المخالفة ممكن تتحيد من المجموعة.',
+  adminRequest: 'عافاك عطيني صلاحية مشرف باش نقدر نحيد الكلام الخايب أوتوماتيكياً من هاد المجموعة.',
+  langSet: (code, name) => `تبدلات اللغة ديال هاد المجموعة لـ *${name}* (${code}).`,
+  langUnknown: (code) => `رمز اللغة "${code}" ما معروفش. استعمل: ma, en, cs, es, de, fr, pt, ru, id.`,
+  noMention: 'عافاك منشن شي مستخدم واحد على الأقل.',
+  cantSelf: 'ما نقدرش ندير هاد الإجراء على راسي.',
+  cantOwner: 'ما نقدرش ندير هاد الإجراء على مول المجموعة.',
+  cantDm: (user) => `ما قدرتش نصيفط رسالة خاصة لـ @${user}. ممكن يكون سادّ الرسائل الخاصة.`,
+  kickFail: (user, status) => `ما قدرتش نخرج @${user} من المجموعة. الحالة: ${status}`,
+  kickFailSimple: (user) => `ما قدرتش نخرج @${user} من المجموعة.`,
+  banFail: (user, status) => `ما قدرتش نمنع @${user} من الدخول. الحالة: ${status}`,
+  banFailSimple: (user) => `ما قدرتش نمنع @${user} من الدخول.`,
+  banned: (user) => `تمنع @${user} من الرجوع للمجموعة.`,
+  muted: (nameList, duration) => `تسكتو ${nameList} لمدة *${duration}*.\nالرسائل ديالهم غادي تتمسح أوتوماتيكياً فهاد المدة.`,
+  muteDm: (groupName, duration) => `تسكتّي فمجموعة *${groupName}* لمدة *${duration}*.\nالرسائل ديالك غادي تتمسح أوتوماتيكياً فهاد المدة.`,
+  unmuted: (nameList) => `تحيدات مدة السكوت على ${nameList}.`,
+  unmuteDm: (groupName) => `سالَت مدة السكوت ديالك فمجموعة *${groupName}*. تقدر ترجع تصيفط الرسائل.`,
+  unmuteGc: (user) => `سالَت مدة السكوت ديال @${user}.`,
+  muteInvalid: 'الصيغة ما صحيحةش. استعمل: ?mute @user <number> [s|m|d]\nمثال: ?mute @user 10 m',
+  pong: 'البوت خدام! 🏓',
+  credits: 'بوت مراقبة واتساب\n\nالأصل ديال المشروع: github.com/martinsuii/wa-bot\nمبني على Baileys.',
+  status: (connected, uptime) =>
+    '🤖 *حالة البوت*\n\n' +
+    `*الاتصال:* ${connected ? '🟢 خدام' : '🔴 مقطوع'}\n` +
+    `*مدة الخدمة:* ${uptime}`,
+  helpPublic:
+    '📋 *الأوامر*\n\n' +
+    '!ping - جرّب واش البوت خدام\n' +
+    '!status - شوف حالة البوت\n' +
+    '!credits - معلومات على البوت\n' +
+    '!coinflip - قلب العملة\n' +
+    '!help - لائحة المساعدة\n\n' +
+    'البوت كيمسح الكلام الخايب أوتوماتيكياً فالمجموعات اللي عندو فيها صلاحية مشرف.',
+  helpAdmin:
+    '🛡️ *أوامر المشرفين*\n' +
+    '(خاص البوت يكون مشرف فالمجموعة)\n\n' +
+    '?warn @user [السبب] - نبه شي مستخدم\n' +
+    '?warnings @user - شوف التنبيهات ديالو\n' +
+    '?kick @user - خرج المستخدم من المجموعة\n' +
+    '?ban @user - منع المستخدم من الرجوع\n' +
+    '?unban @user - حيد المنع\n' +
+    '?mute @user <المدة> [s|m|d] - سكّت المستخدم مؤقتاً\n' +
+    '?unmute @user - حيد السكوت\n' +
+    '?ignore @user - استثني المستخدم من مراقبة السبّ\n' +
+    '?unignore @user - رجّعو للمراقبة\n' +
+    '?addword <كلمة> - زيد كلمة ممنوعة\n' +
+    '?removeword <كلمة> - حيد كلمة من اللائحة\n' +
+    '?purge <n> - مسح آخر رسائل\n' +
+    '?stats - إحصائيات المجموعة\n' +
+    '?settings - إعدادات المجموعة\n' +
+    '?export - صدّر الإعدادات\n' +
+    '?import <code> - دخل الإعدادات\n' +
+    '?set-lang <code> - بدّل اللغة\n' +
+    '?set-warnlimit <n> - حدّد عدد التنبيهات\n' +
+    '?set-warnpunish [ban|kick|mute] - حدّد العقوبة\n' +
+    '?set-antispam on/off - شعل أو طفي منع السبام\n' +
+    '?set-welcome <msg> - بدّل رسالة الترحيب\n' +
+    '?set-goodbye <msg> - بدّل رسالة الوداع\n' +
+    '?help - المساعدة',
+  warnCount: (user, count, limit) => `تنبه @${user}. عندو دابا *${count}/${limit}* تنبيهات.`,
+  autoBanDm: (groupName, count, limit) => `تمنعتي أوتوماتيكياً من مجموعة *${groupName}* حيث وصلتي لـ *${count}/${limit}* تنبيهات.`,
+  autoBanned: (user, count, limit) => `تمنع @${user} أوتوماتيكياً حيث وصل لـ *${count}/${limit}* تنبيهات.`,
+  spamMuteDm: (groupName, duration) => `تسكتّي فمجموعة *${groupName}* لمدة *${duration}* بسبب السبام. الرسائل ديالك غادي تتمسح.`,
+  spamMuted: (user) => `مكافحة السبام: تسكت @${user} لمدة 5 دقايق.`,
+  unbanned: (nameList) => `تحيد المنع على ${nameList}.`,
+  warningsNone: (user) => `@${user} ما عندوش حتى تنبيه.`,
+  warningsList: (user, count, limit, entries) => `تنبيهات @${user} (*${count}/${limit}*):\n${entries}`,
+  wordAdded: (word) => `تزادت "${word}" للائحة الكلمات الممنوعة ديال المجموعة.`,
+  wordRemoved: (word) => `تحيدات "${word}" من لائحة الكلمات الممنوعة ديال المجموعة.`,
+  wordNotFound: (word) => `"${word}" ما كايناش فلائحة الكلمات الممنوعة ديال المجموعة.`,
+  settingsDisplay: (langName, langCode, warnLimit, punish, punishDur, antiSpam, banCount, muteCount, customCount, ignoredCount, welcome, goodbye) =>
+    '⚙ *إعدادات المجموعة*\n\n' +
+    `*اللغة:* ${langName} (${langCode})\n` +
+    `*حد التنبيهات:* ${warnLimit}\n` +
+    `*العقوبة:* ${punish}${punishDur ? ' (' + punishDur + ')' : ''}\n` +
+    `*مكافحة السبام:* ${antiSpam}\n` +
+    `*الممنوعين:* ${banCount}\n` +
+    `*المسكتين:* ${muteCount}\n` +
+    `*المستثنين من المراقبة:* ${ignoredCount}\n` +
+    `*الكلمات المخصصة:* ${customCount}\n` +
+    `*الترحيب:* ${welcome}\n` +
+    `*الوداع:* ${goodbye}`,
+  warnLimitSet: (n) => `تحدّد حد التنبيهات فـ *${n}*.`,
+  warnPunishSet: (type, dur) => `تحددت عقوبة التنبيهات: *${type}*${dur ? ' لمدة ' + dur : ''}.`,
+  warnPunishInvalid: 'نوع العقوبة ما صحيحش. استعمل: ?set-warnpunish [ban|kick|mute] [المدة إلا كان mute]\nمثال: ?set-warnpunish mute 30 m',
+  autoKickDm: (groupName, count, limit) => `تخرجتي أوتوماتيكياً من *${groupName}* حيث وصلتي لـ *${count}/${limit}* تنبيهات.`,
+  autoKicked: (user, count, limit) => `تخرج @${user} أوتوماتيكياً حيث وصل لـ *${count}/${limit}* تنبيهات.`,
+  autoMuteDm: (groupName, count, limit, duration) => `تسكتّي أوتوماتيكياً فـ *${groupName}* لمدة *${duration}* من بعد ما وصلتي لـ *${count}/${limit}* تنبيهات.`,
+  autoMuted: (user, count, limit, duration) => `تسكت @${user} أوتوماتيكياً لمدة *${duration}* من بعد *${count}/${limit}* تنبيهات.`,
+  antiSpamSet: (val) => `مكافحة السبام ولات: *${val}*.`,
+  welcomeSet: (msg) => `تبدلات رسالة الترحيب لـ: "${msg}"\nاستعمل {user} باش يتعوض باسم العضو الجديد.`,
+  goodbyeSet: (msg) => `تبدلات رسالة الوداع لـ: "${msg}"\nاستعمل {user} باش يتعوض باسم العضو. كتظهر غير إلا خرج العضو بوحدو.`,
+  ignored: (nameList) => `دابا ${nameList} مستثنين من مراقبة السبّ.`,
+  unignored: (nameList) => `تحيد الاستثناء على ${nameList} ورجعو للمراقبة.`,
+  exported: (code) => `*كود التصدير:*\n\`\`\`\n${code}\n\`\`\`\nباش تدخل الإعدادات استعمل: ?import <code>`,
+  imported: 'دخلات الإعدادات بنجاح.',
+  importInvalid: 'كود الاستيراد ما صحيحش.',
+  statsDisplay: (warns, bans, kicks, mutes, deleted, today) =>
+    '📊 *إحصائيات المجموعة*\n\n' +
+    `*التنبيهات:* ${warns}\n` +
+    `*المنع:* ${bans}\n` +
+    `*الإخراج من المجموعة:* ${kicks}\n` +
+    `*السكوت المؤقت:* ${mutes}\n` +
+    `*الرسائل الممسوحة:* ${deleted}\n` +
+    `*الإجراءات اليوم:* ${today}`,
+};
+
+const DEFAULT_LANG = 'ma';
 
 function t(lang, key) {
   const l = translations[lang] || translations[DEFAULT_LANG];

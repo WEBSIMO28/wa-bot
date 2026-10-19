@@ -104,16 +104,27 @@ async function isBotAdmin(sock, groupJid) {
   }
 }
 
+
 function extractText(msg) {
-  if (!msg.message) return null;
+  if (!msg?.message) return null;
+
   const m = msg.message;
-  if (m.conversation) return m.conversation;
-  if (m.extendedTextMessage?.text) return m.extendedTextMessage.text;
-  if (m.imageMessage?.caption) return m.imageMessage.caption;
-  if (m.videoMessage?.caption) return m.videoMessage.caption;
-  if (m.documentMessage?.caption) return m.documentMessage.caption;
-  if (m.audioMessage?.caption) return m.audioMessage.caption;
-  return null;
+
+  const text =
+    m.conversation ??
+    m.extendedTextMessage?.text ??
+    m.imageMessage?.caption ??
+    m.videoMessage?.caption ??
+    m.documentMessage?.caption ??
+    m.documentWithCaptionMessage?.message?.documentMessage?.caption ??
+    m.buttonsResponseMessage?.selectedDisplayText ??
+    m.listResponseMessage?.title ??
+    m.templateButtonReplyMessage?.selectedDisplayText ??
+    m.interactiveResponseMessage?.body?.text;
+
+  return typeof text === "string" && text.trim()
+    ? text.trim()
+    : null;
 }
 
 const loadJson = (file, label) => {

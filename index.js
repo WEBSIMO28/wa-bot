@@ -18,8 +18,8 @@ const path = require('path');
 const { checkText, stripDiacritics } = require('./badwords');
 const { t, DEFAULT_LANG, translations } = require('./lang');
 
-const openai = process.env.OPENAI_API_KEY
-  ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+const openai = process.env.GROQ_API_KEY
+  ? new OpenAI({ apiKey: process.env.GROQ_API_KEY })
   : null;
 
 if (ffmpegPath) ffmpeg.setFfmpegPath(ffmpegPath);
@@ -664,7 +664,7 @@ function getAudioMessage(msg) {
 
 async function transcribeVoiceNote(sock, msg) {
   if (!openai) {
-    logger.warn('Voice moderation skipped: OPENAI_API_KEY is not configured');
+    logger.warn('Voice moderation skipped: GROQ_API_KEY is not configured');
     return null;
   }
 

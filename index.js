@@ -479,14 +479,31 @@ if (qr) {
     }
   });
 
-  sock.ev.on('messages.upsert', async ({ messages, type }) => {
-    if (type !== 'notify') return;
-    for (const msg of messages) {
-      try { await handleMessage(sock, msg); }
-      catch (err) { logger.error({ err, msgKey: msg.key }, 'Unhandled message error'); }
-    }
-  });
+  
+sock.ev.on('messages.upsert', async ({ messages, type }) => {
+  console.log('MESSAGE EVENT:', type, 'COUNT:', messages.length);
 
+  if (type !== 'notify') return;
+
+  for (const msg of messages) {
+    console.log(
+      'INCOMING:',
+      msg.key?.remoteJid,
+      'FROM ME:',
+      msg.key?.fromMe,
+      'TEXT:',
+      msg.message?.conversation ||
+      msg.message?.extendedTextMessage?.text ||
+      '[non-text message]'
+    );
+
+    try {
+      await handleMessage(sock, msg);
+    } catch (err) {
+      logger.error({ err, msgKey: msg.key }, 'Unhandled message error');
+    }
+  }
+});
   sock.ev.on('group-participants.update', async ({ id, participants, action, author }) => {
     adminCache.delete(id);
     nonAdminNotified.delete(id);

@@ -626,7 +626,18 @@ async function handleMessage(sock, msg) {
   const remoteJid = msg.key.remoteJid;
   const sender = msg.key.participant || remoteJid;
   const text = extractText(msg);
-  if (!text) return;
+
+const sender = msg.key.participant || remoteJid;
+const text = extractText(msg);
+
+console.log("MESSAGE DEBUG:", {
+  remoteJid,
+  fromMe: msg.key.fromMe,
+  text,
+  isGroup: isGroup(remoteJid)
+});
+
+if (!text) return;
 
   if (isGroup(remoteJid)) trackMsgKey(remoteJid, msg.key);
 

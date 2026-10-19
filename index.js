@@ -458,12 +458,11 @@ async function connect() {
   sock.ev.on('creds.update', saveCreds);
 
   sock.ev.on('connection.update', ({ connection, lastDisconnect, qr }) => {
-    if (qr) { if (qr) {   console.log('
-========== WHATSAPP QR CODE ==========
-');   qrcode.generate(qr, { small: false });   console.log('
-========== SCAN THIS QR CODE ==========
-'); } logger.info('Scan the QR code to pair'); }
-    if (connection === 'open') {
+if (qr) {
+  console.log('\n========== WHATSAPP QR CODE ==========\n');
+  qrcode.generate(qr, { small: false });
+  console.log('\n========== SCAN THIS QR CODE ==========\n');
+}    if (connection === 'open') {
       STATUS.connected = true;
       logger.info('Bot started successfully');
       adminCache.clear();

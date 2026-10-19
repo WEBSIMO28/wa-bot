@@ -702,7 +702,7 @@ async function transcribeVoiceNote(sock, msg) {
     });
     return (result.text || '').trim();
   } catch (err) {
-    logger.error({ err }, 'Voice note transcription failed');
+    console.error('Voice note transcription failed:', {   message: err?.message,   status: err?.status,   code: err?.code,   type: err?.type });
     return null;
   } finally {
     if (tempDir) {

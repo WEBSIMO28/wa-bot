@@ -618,7 +618,7 @@ async function runAdminCommand(sock, cmd, msg, remoteJid, sender) {
 }
 
 async function handleMessage(sock, msg) {
-  if (!msg.key || msg.key.fromMe) return;
+  if (!msg.key) return;
   const remoteJid = msg.key.remoteJid;
   const sender = msg.key.participant || remoteJid;
   const text = extractText(msg);

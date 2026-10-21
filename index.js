@@ -744,6 +744,12 @@ async function moderateVoiceNote(sock, msg, remoteJid, sender) {
   await autoPunish(sock, remoteJid, sender, groupName);
 }
 
+
+function containsLink(text = '') {
+  // URLs with schemes, www, popular invite links, or bare domains.
+  return /(?:\bhttps?:\/\/|\bwww\.|(?:chat\.whatsapp\.com|wa\.me|t\.me|telegram\.me|discord\.gg|discord\.com\/invite|instagram\.com|facebook\.com|fb\.com|youtu\.be|youtube\.com|tiktok\.com|bit\.ly|tinyurl\.com)\/?|(?:^|[\s(])(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+(?:com|net|org|info|io|co|ma|fr|uk|de|app|dev|site|online|shop|me|gg|xyz|top|pro|store|tv|ly|edu|gov)\b)/i.test(text);
+}
+
 async function handleMessage(sock, msg) {
   console.log("HANDLE MESSAGE CALLED:", {
   fromMe: msg?.key?.fromMe,
@@ -794,6 +800,43 @@ console.log("MESSAGE DEBUG:", {
   if (await runPublicCommand(sock, cmd, replyJid, remoteJid)) return;
 
   if (!isGroup(remoteJid)) return;
+
+  // Anti-link: admins may post links; ordinary members may not.
+  if (containsLink(text) && !msg.key.fromMe && !isIgnored(remoteJid, sender)) {
+    const botAdmin = await isBotAdmin(sock, remoteJid);
+    if (botAdmin) {
+      const senderAdmin = await isSenderAdmin(sock, remoteJid, sender);
+      if (!senderAdmin) {
+        try {
+          await sock.sendMessage(remoteJid, { delete: msg.key });
+          bumpStat(remoteJid, 'deleted');
+        } catch (err) {
+          logger.warn({ err, group: remoteJid }, 'Failed to delete link message');
+          return;
+        }
+
+        const lang = getGroupLang(remoteJid);
+        let groupName = 'the group';
+        try { groupName = (await sock.groupMetadata(remoteJid)).subject || groupName; } catch (_) {}
+
+        const count = addWarning(remoteJid, sender, 'link sharing', 'bot');
+        const limit = getWarnLimit(remoteJid);
+
+        try {
+          await sock.sendMessage(sender, {
+            text: `⚠️ Your message containing a link was removed from "${groupName}". Warning ${count}/${limit}. Links are not allowed for regular members.`
+          });
+        } catch (_) {}
+
+        await sock.sendMessage(remoteJid, {
+          text: `⚠️ @${sender.split('@')[0]} links are not allowed for members. Warning ${count}/${limit}.`,
+          mentions: [sender]
+        });
+        await autoPunish(sock, remoteJid, sender, groupName);
+        return;
+      }
+    }
+  }
 
   if (checkSpam(remoteJid, sender)) {
     if (!isMuted(remoteJid, sender)) {
